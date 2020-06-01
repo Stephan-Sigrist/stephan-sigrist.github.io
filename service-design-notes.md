@@ -44,9 +44,21 @@ Good article: [Pat Holland](http://cidrdb.org/cidr2005/papers/P12.pdf)
 Important points:
 - data on the inside may only changed by owning service
 - data on the inside is easy to change, data on the outside is hard to change
+- data is exchanged between services with the help of messages
+- messages are always from the past, because the state could already have changed when message is retrieved. Up-to-date inforamtion is only available within a service.
+- message are immutable and contain a version-dependent identifier
+- messages must be stable over time, e.g., if customerId 42 belongs to customer A it should never belong to another customer even if customer A is deleted.
+- commands are requests to potentially change something in the future, events are facts that have changed
 
 Analogy:
 Your thoughts in your brain are yours and nobody should change them (data on the inside). Thoughts can change easily. If you write down your thoughts on paper (data on the outside) and give this paper to another person then it is hard to change.
+
+#### Message formats
+Messages consist of an operator/action and zero or more operands/parameters. Messages may be represented in text (XML, JSON, ...) or binary (Avro, Protobuf, ...) formats. Messages should be defined by a schema.
+
+#### Message schema evolution
+Schema evolution can happen in different ways. The easiest is to update the message in a backward-compatible way, e.g., deprecated attributes but do not delete them. Make sure the message parser is configured for tolerant parsing (e.g., ObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) or @JsonIgnoreProperties(ignoreUnknown = true))
+If this is not possible then create new topic for new version, e.g., order-v1 and order-v2 (dual-schema upgrade window). If topics are source of truth then old version cannot easily be removed.
 
 ### Communication
 #### Events may have two different roles
